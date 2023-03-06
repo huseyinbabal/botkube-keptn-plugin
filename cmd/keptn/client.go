@@ -2,8 +2,9 @@ package keptn
 
 import (
 	"context"
-	api "github.com/keptn/go-utils/pkg/api/utils/v2"
 	"time"
+
+	api "github.com/keptn/go-utils/pkg/api/utils/v2"
 )
 
 // Client Keptn client
@@ -55,9 +56,9 @@ func NewClient(url, token string) (*Client, error) {
 }
 
 // Events returns only new events.
-func (c *Client) Events(ctx context.Context, request *GetEventsRequest) ([]Event, error) {
+func (c *Client) Events(ctx context.Context, request *GetEventsRequest) ([]*Event, error) {
 	fromTime := request.FromTime.UTC().Format(time.RFC3339)
-	var events []Event
+	var events []*Event
 	res, err := c.API.Events().GetEvents(ctx, &api.EventFilter{
 		Project:  request.Project,
 		FromTime: fromTime,
@@ -72,7 +73,7 @@ func (c *Client) Events(ctx context.Context, request *GetEventsRequest) ([]Event
 		if err != nil {
 			return nil, err
 		}
-		events = append(events, Event{
+		events = append(events, &Event{
 			ID:     ev.ID,
 			Source: *ev.Source,
 			Type:   *ev.Type,
@@ -80,5 +81,4 @@ func (c *Client) Events(ctx context.Context, request *GetEventsRequest) ([]Event
 		})
 	}
 	return events, nil
-
 }

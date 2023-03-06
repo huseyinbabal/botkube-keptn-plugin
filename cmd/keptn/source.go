@@ -52,7 +52,7 @@ func (p *Source) Stream(ctx context.Context, input source.StreamInput) (source.S
 		eventCh: make(chan source.Event),
 		config:  config,
 	}
-	go consumeEvents(ctx, s)
+	go consumeEvents(ctx, &s)
 	return source.StreamOutput{
 		Event: s.eventCh,
 	}, nil
@@ -67,7 +67,7 @@ func (p *Source) Metadata(_ context.Context) (api.MetadataOutput, error) {
 	}, nil
 }
 
-func consumeEvents(ctx context.Context, s Source) {
+func consumeEvents(ctx context.Context, s *Source) {
 	keptn, err := NewClient(s.config.URL, s.config.Token)
 	exitOnError(err)
 
@@ -82,7 +82,7 @@ func consumeEvents(ctx context.Context, s Source) {
 		}
 		for _, event := range res {
 			message := source.Event{
-				Message:         messageFrom(event, s),
+				Message:         messageFrom(event),
 				RawObject:       event,
 				AnalyticsLabels: event.ToAnonymizedEventDetails(),
 			}
@@ -93,7 +93,7 @@ func consumeEvents(ctx context.Context, s Source) {
 	}
 }
 
-func messageFrom(event Event, s Source) api.Message {
+func messageFrom(event *Event) api.Message {
 	emoji := ""
 	if event.Data.Status != "" {
 		emoji = emojiForStatus[event.Data.Status]
@@ -110,7 +110,7 @@ func messageFrom(event Event, s Source) api.Message {
 	}
 }
 
-func bulletPointEventAttachments(event Event) string {
+func bulletPointEventAttachments(event *Event) string {
 	strBuilder := strings.Builder{}
 	var labels []string
 	appendToListIfNotEmpty(&labels, "ID", event.ID)
